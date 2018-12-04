@@ -1,0 +1,5 @@
+config AYUTEST
+        bool "prints hello"
+        default y
+        help
+                This will prints hello
