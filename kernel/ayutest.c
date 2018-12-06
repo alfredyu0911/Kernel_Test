@@ -5,85 +5,68 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 
+phys_addr_t slow_virt_to_phys(void *__virt_addr);
+pte_t *lookup_address(unsigned long address, unsigned int *level);
+pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level);
+
+phys_addr_t slow_virt_to_phys(void *__virt_addr)
+{
+	unsigned long virt_addr = (unsigned long)__virt_addr;
+	phys_addr_t phys_addr;
+	unsigned long offset;
+	enum pg_level level;
+	unsigned long psize;
+	unsigned long pmask;
+	pte_t *pte;
+
+	pte = lookup_address(virt_addr, &level);
+	BUG_ON(!pte);
+	psize = page_level_size(level);
+	pmask = page_level_mask(level);
+	offset = virt_addr & ~pmask;
+	phys_addr = (phys_addr_t)pte_pfn(*pte) << PAGE_SHIFT;
+	return (phys_addr | offset);
+}
+
+pte_t *lookup_address(unsigned long address, unsigned int *level)
+{
+    return lookup_address_in_pgd(pgd_offset_k(address), address, level);
+}
+
+pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level)
+{
+	pud_t *pud;
+	pmd_t *pmd;
+
+	*level = PG_LEVEL_NONE;
+
+	if (pgd_none(*pgd))
+		return NULL;
+
+	pud = pud_offset(pgd, address);
+	if (pud_none(*pud))
+		return NULL;
+
+	*level = PG_LEVEL_1G;
+	if (pud_large(*pud) || !pud_present(*pud))
+		return (pte_t *)pud;
+
+	pmd = pmd_offset(pud, address);
+	if (pmd_none(*pmd))
+		return NULL;
+
+	*level = PG_LEVEL_2M;
+	if (pmd_large(*pmd) || !pmd_present(*pmd))
+		return (pte_t *)pmd;
+
+	*level = PG_LEVEL_4K;
+
+	return pte_offset_kernel(pmd, address);
+}
+
 unsigned long vaddr2paddr0(struct mm_struct *mm, unsigned long vaddr)
 {
-    pgd_t *pgd;
-    pud_t *pud;
-    pmd_t *pmd;
-    pte_t *pte;
-    unsigned long paddr = 0;
-    unsigned long page_addr = 0;
-    unsigned long page_offset = 0;
-
-    pgd = pgd_offset(mm, vaddr);
-    printk(KERN_INFO"pgd = 0x%p\n",pgd);
-    printk(KERN_INFO"pgd_val(*pgd) = 0x%lx\n",pgd_val(*pgd));
-    if ( pgd_none(*pgd) || pgd_bad(*pgd) )
-    {
-        printk(KERN_INFO"Not mapped in pgd.\n");
-        return 0;
-    }
-    /*printk("{[(ayumsg)]} pgd_val = 0x%lx\n", pgd_val(*pgd));
-    printk("{[(ayumsg)]} pgd_index = %lu\n", pgd_index(vaddr));
-    if ( pgd_none(*pgd) ) 
-    {
-        printk("{[(ayumsg)]} not mapped in pgd\n");
-        return -1;
-    }*/
-
-    pud = pud_offset(pgd, vaddr);
-    printk(KERN_INFO"pud = 0x%p\n",pud);
-    printk(KERN_INFO"pud_val(*pud) = 0x%lx\n",pud_val(*pud));
-    if ( pud_none(*pud) || pud_bad(*pud) )
-    {
-        printk(KERN_INFO"Not mapped in pud.\n");
-        return -1;
-    }
-    /*printk("{[(ayumsg)]} pud_val = 0x%lx\n", pud_val(*pud));
-    if ( pud_none(*pud) ) 
-    {
-        printk("{[(ayumsg)]} not mapped in pud\n");
-        return -1;
-    }*/
-
-    pmd = pmd_offset(pud, vaddr);
-    printk(KERN_INFO"pmd = 0x%p\n",pmd);
-    printk(KERN_INFO"pmd_val(*pmd) = 0x%lx\n",pmd_val(*pmd));
-    if ( pmd_none(*pmd) || pmd_bad(*pmd) )
-    {
-        printk(KERN_INFO"Not mapped in pmd.\n");
-        return -1;
-    }
-    /*printk("{[(ayumsg)]} pmd_val = 0x%lx\n", pmd_val(*pmd));
-    printk("{[(ayumsg)]} pmd_index = %lu\n", pmd_index(vaddr));
-    if ( pmd_none(*pmd) ) 
-    {
-        printk("{[(ayumsg)]} not mapped in pmd\n");
-        return -1;
-    }*/
-
-    printk("{[(ayumsg)]} check 1-1\n");
-    pte = pte_offset_kernel(pmd, vaddr);
-    printk("{[(ayumsg)]} check 1-2\n");
-    if(pte_none(*pte))
-    {
-        printk("{[(ayumsg)]} check 1-3\n");
-        printk(KERN_INFO"Not mapped in pte.\n");
-        return -1;
-    }
-    printk("{[(ayumsg)]} check 1-4\n");
-    if(!pte_present(*pte))
-    {
-        printk(KERN_INFO"pte not in RAM.\n");
-        return -1;
-    }
-    printk(KERN_INFO"pte = 0x%p\n",pte);
-    printk(KERN_INFO"pte_val(*pte) = 0x%lx\n",pte_val(*pte));
-    /*printk("{[(ayumsg)]} pte_val = 0x%lx\n", pte_val(*pte));
-    printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(vaddr));
-    printk("{[(ayumsg)]} check 9\n");
-    return -1;*/
-    return (pte_val(*pte) & PAGE_MASK) | (vaddr & ~PAGE_MASK);
+    return slow_virt_to_phys(vaddr);
 }
 
 unsigned long vaddr2paddr1(struct mm_struct *mm, unsigned long vaddr)
