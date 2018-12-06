@@ -5,11 +5,11 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 
-phys_addr_t slow_virt_to_phys(void *__virt_addr);
-pte_t *lookup_address(unsigned long address, unsigned int *level);
-pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level);
+phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr);
+pte_t *ayu_lookup_address(unsigned long address, unsigned int *level);
+pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level);
 
-phys_addr_t slow_virt_to_phys(void *__virt_addr)
+phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr)
 {
 	unsigned long virt_addr = (unsigned long)__virt_addr;
 	phys_addr_t phys_addr;
@@ -28,12 +28,12 @@ phys_addr_t slow_virt_to_phys(void *__virt_addr)
 	return (phys_addr | offset);
 }
 
-pte_t *lookup_address(unsigned long address, unsigned int *level)
+pte_t *ayu_lookup_address(unsigned long address, unsigned int *level)
 {
-    return lookup_address_in_pgd(pgd_offset_k(address), address, level);
+    return ayu_lookup_address_in_pgd(pgd_offset_k(address), address, level);
 }
 
-pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level)
+pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level)
 {
 	pud_t *pud;
 	pmd_t *pmd;
@@ -66,7 +66,7 @@ pte_t *lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *le
 
 unsigned long vaddr2paddr0(struct mm_struct *mm, unsigned long vaddr)
 {
-    return slow_virt_to_phys(vaddr);
+    return ayu_slow_virt_to_phys(vaddr);
 }
 
 unsigned long vaddr2paddr1(struct mm_struct *mm, unsigned long vaddr)
