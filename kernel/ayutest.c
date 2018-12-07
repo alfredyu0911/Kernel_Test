@@ -19,7 +19,7 @@ phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr)
 	unsigned long pmask;
 	pte_t *pte;
 
-	pte = lookup_address(virt_addr, &level);
+	pte = ayu_lookup_address(virt_addr, &level);
 	BUG_ON(!pte);
 	psize = page_level_size(level);
 	pmask = page_level_mask(level);
