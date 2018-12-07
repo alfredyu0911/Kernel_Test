@@ -23,7 +23,7 @@ phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr)
     printk("{[(ayumsg)]} check 0-2\n");
 
     printk("{[(ayumsg)]} pte_val = 0x%lx\n", pte_val(*pte));
-    printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(vaddr));
+    printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(virt_addr));
 
 	//BUG_ON(!pte);
     if ( !pte )
