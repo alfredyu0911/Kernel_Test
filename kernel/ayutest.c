@@ -57,7 +57,7 @@ pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int
 		return NULL;
 
     printk("{[(ayumsg)]} pgd_val = 0x%lx\n", pgd_val(*pgd));
-    printk("{[(ayumsg)]} pgd_index = %lu\n", pgd_index(vaddr));
+    printk("{[(ayumsg)]} pgd_index = %lu\n", pgd_index(address));
 
 	pud = pud_offset(pgd, address);
 	if (pud_none(*pud))
@@ -78,7 +78,7 @@ pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int
 		return (pte_t *)pmd;
 
     printk("{[(ayumsg)]} pmd_val = 0x%lx\n", pmd_val(*pmd));
-    printk("{[(ayumsg)]} pmd_index = %lu\n", pmd_index(vaddr));
+    printk("{[(ayumsg)]} pmd_index = %lu\n", pmd_index(address));
 
 	*level = PG_LEVEL_4K;
 
