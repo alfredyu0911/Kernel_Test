@@ -19,12 +19,19 @@ phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr)
 	unsigned long pmask;
 	pte_t *pte;
 
+    printk("{[(ayumsg)]} check 0-1\n");
 	pte = ayu_lookup_address(virt_addr, &level);
+    printk("{[(ayumsg)]} check 0-2\n");
 	BUG_ON(!pte);
+    printk("{[(ayumsg)]} check 0-3\n");
 	psize = page_level_size(level);
+    printk("{[(ayumsg)]} check 0-4\n");
 	pmask = page_level_mask(level);
+    printk("{[(ayumsg)]} check 0-5\n");
 	offset = virt_addr & ~pmask;
+    printk("{[(ayumsg)]} check 0-6\n");
 	phys_addr = (phys_addr_t)pte_pfn(*pte) << PAGE_SHIFT;
+    printk("{[(ayumsg)]} check 0-7\n");
 	return (phys_addr | offset);
 }
 
