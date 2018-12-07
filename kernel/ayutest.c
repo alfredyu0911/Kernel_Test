@@ -5,13 +5,12 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 
-phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr);
+phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr);
 pte_t *ayu_lookup_address(unsigned long address, unsigned int *level);
 pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level);
 
-phys_addr_t ayu_slow_virt_to_phys(void *__virt_addr)
+phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr)
 {
-	unsigned long virt_addr = (unsigned long)__virt_addr;
 	phys_addr_t phys_addr;
 	unsigned long offset;
 	enum pg_level level;
