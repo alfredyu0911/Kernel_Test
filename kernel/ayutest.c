@@ -21,7 +21,10 @@ phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr)
     printk("{[(ayumsg)]} check 0-1\n");
 	pte = ayu_lookup_address(virt_addr, &level);
     printk("{[(ayumsg)]} check 0-2\n");
-	BUG_ON(!pte);
+	//BUG_ON(!pte);
+    if ( !pte )
+        return -1;
+        
     printk("{[(ayumsg)]} check 0-3\n");
 	psize = page_level_size(level);
     printk("{[(ayumsg)]} check 0-4\n");
