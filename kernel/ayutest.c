@@ -21,10 +21,14 @@ phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr)
     printk("{[(ayumsg)]} check 0-1\n");
 	pte = ayu_lookup_address(virt_addr, &level);
     printk("{[(ayumsg)]} check 0-2\n");
+
+    printk("{[(ayumsg)]} pte_val = 0x%lx\n", pte_val(*pte));
+    printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(vaddr));
+
 	//BUG_ON(!pte);
     if ( !pte )
         return -1;
-        
+
     printk("{[(ayumsg)]} check 0-3\n");
 	psize = page_level_size(level);
     printk("{[(ayumsg)]} check 0-4\n");
@@ -52,6 +56,9 @@ pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int
 	if (pgd_none(*pgd))
 		return NULL;
 
+    printk("{[(ayumsg)]} pgd_val = 0x%lx\n", pgd_val(*pgd));
+    printk("{[(ayumsg)]} pgd_index = %lu\n", pgd_index(vaddr));
+
 	pud = pud_offset(pgd, address);
 	if (pud_none(*pud))
 		return NULL;
@@ -60,6 +67,8 @@ pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int
 	if (pud_large(*pud) || !pud_present(*pud))
 		return (pte_t *)pud;
 
+    printk("{[(ayumsg)]} pud_val = 0x%lx\n", pud_val(*pud));
+
 	pmd = pmd_offset(pud, address);
 	if (pmd_none(*pmd))
 		return NULL;
@@ -67,6 +76,9 @@ pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int
 	*level = PG_LEVEL_2M;
 	if (pmd_large(*pmd) || !pmd_present(*pmd))
 		return (pte_t *)pmd;
+
+    printk("{[(ayumsg)]} pmd_val = 0x%lx\n", pmd_val(*pmd));
+    printk("{[(ayumsg)]} pmd_index = %lu\n", pmd_index(vaddr));
 
 	*level = PG_LEVEL_4K;
 
