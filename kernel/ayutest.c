@@ -55,7 +55,7 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 
 	level = PG_LEVEL_1G;
 	if ( pud_large(*pud) || !pud_present(*pud) )
-        return ayu_pte_2_addr((pte_t *)pud, level);
+        return ayu_pte_2_addr((pte_t *)pud, level, v_addr);
 
     printk("{[(ayumsg)]} check 3 pud_val = 0x%lx\n", pud_val(*pud));
 
@@ -67,7 +67,7 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 
 	level = PG_LEVEL_2M;
 	if ( pmd_large(*pmd) || !pmd_present(*pmd) )
-		return ayu_pte_2_addr((pte_t *)pmd, level);
+		return ayu_pte_2_addr((pte_t *)pmd, level, v_addr);
 
     printk("{[(ayumsg)]} check 5 pmd_val, pmd_index = [0x%lx, %lu]\n", pmd_val(*pmd), pmd_index(v_addr));
     
@@ -76,13 +76,13 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
     {
         printk("{[(ayumsg)]} check 6\n");
         pte = pte_offset_kernel(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(pte, level);
+        p_addr = ayu_pte_2_addr(pte, level, v_addr);
     }
     else
     {
         printk("{[(ayumsg)]} check 7\n");
         pte = pte_offset_map(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(pte, level);
+        p_addr = ayu_pte_2_addr(pte, level, v_addr);
         pte_unmap(pte);
     }
 
