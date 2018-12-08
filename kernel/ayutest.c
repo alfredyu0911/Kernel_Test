@@ -9,36 +9,59 @@ phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr);
 pte_t *ayu_lookup_address(unsigned long address, unsigned int *level);
 pte_t *ayu_lookup_address_in_pgd(pgd_t *pgd, unsigned long address, unsigned int *level);
 
-phys_addr_t ayu_slow_virt_to_phys(unsigned long virt_addr)
+unsigned long ayu_slow_virt_to_phys(unsigned long virt_addr)
 {
-	phys_addr_t phys_addr;
-	unsigned long offset;
+	unsigned long phys_addr, offset;
 	enum pg_level level;
-	unsigned long psize;
-	unsigned long pmask;
 	pte_t *pte;
 
-    printk("{[(ayumsg)]} check 0-1\n");
 	pte = ayu_lookup_address(virt_addr, &level);
-    printk("{[(ayumsg)]} check 0-2\n");
-
-    printk("{[(ayumsg)]} pte_val = 0x%lx\n", pte_val(*pte));
-    printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(virt_addr));
-
-	//BUG_ON(!pte);
     if ( !pte )
         return -1;
 
-    printk("{[(ayumsg)]} check 0-3\n");
-	psize = page_level_size(level);
-    printk("{[(ayumsg)]} check 0-4\n");
-	pmask = page_level_mask(level);
-    printk("{[(ayumsg)]} check 0-5\n");
-	offset = virt_addr & ~pmask;
-    printk("{[(ayumsg)]} check 0-6\n");
-	phys_addr = (phys_addr_t)pte_pfn(*pte) << PAGE_SHIFT;
-    printk("{[(ayumsg)]} check 0-7\n");
-	return (phys_addr | offset);
+	switch (level) {
+	case PG_LEVEL_1G:
+		phys_addr = pud_pfn(*(pud_t *)pte) << PAGE_SHIFT;
+		offset = virt_addr & ~PUD_PAGE_MASK;
+		break;
+	case PG_LEVEL_2M:
+		phys_addr = pmd_pfn(*(pmd_t *)pte) << PAGE_SHIFT;
+		offset = virt_addr & ~PMD_PAGE_MASK;
+		break;
+	default:
+		phys_addr = pte_pfn(*pte) << PAGE_SHIFT;
+		offset = virt_addr & ~PAGE_MASK;
+	}
+
+	return (unsigned long)((phys_addr_t)(phys_addr | offset));
+	// phys_addr_t phys_addr;
+	// unsigned long offset;
+	// enum pg_level level;
+	// unsigned long psize;
+	// unsigned long pmask;
+	// pte_t *pte;
+
+    // printk("{[(ayumsg)]} check 0-1\n");
+	// pte = ayu_lookup_address(virt_addr, &level);
+    // printk("{[(ayumsg)]} check 0-2\n");
+
+    // printk("{[(ayumsg)]} pte_val = 0x%lx\n", pte_val(*pte));
+    // printk("{[(ayumsg)]} pte_index = %lu\n", pte_index(virt_addr));
+
+	// //BUG_ON(!pte);
+    // if ( !pte )
+    //     return -1;
+
+    // printk("{[(ayumsg)]} check 0-3\n");
+	// psize = page_level_size(level);
+    // printk("{[(ayumsg)]} check 0-4\n");
+	// pmask = page_level_mask(level);
+    // printk("{[(ayumsg)]} check 0-5\n");
+	// offset = virt_addr & ~pmask;
+    // printk("{[(ayumsg)]} check 0-6\n");
+	// phys_addr = (phys_addr_t)pte_pfn(*pte) << PAGE_SHIFT;
+    // printk("{[(ayumsg)]} check 0-7\n");
+	// return (phys_addr | offset);
 }
 
 pte_t *ayu_lookup_address(unsigned long address, unsigned int *level)
