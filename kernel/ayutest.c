@@ -11,7 +11,13 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level)
 {
     if ( !pte || pte_none(pte) )
+    {
+        if ( !pte )
+            printk("{[(ayumsg)]} pte NULL !!!\n");
+        else
+            printk("{[(ayumsg)]} pte ERROR !!!\n");
         return -1;
+    }
 
     unsigned long psize = page_level_size(level);
     unsigned long pmask = page_level_mask(level);
@@ -192,8 +198,8 @@ void showinfo0(struct mm_struct *mm,
                unsigned long *idx, 
                int testMode)
 {
-    unsigned long ps = ayu_virt_2_phys(struct mm_struct *mm, unsigned long vstart, int testMode);
-    unsigned long pe = ayu_virt_2_phys(struct mm_struct *mm, unsigned long vstart, int testMode);
+    unsigned long ps = ayu_virt_2_phys(mm, vstart, testMode);
+    unsigned long pe = ayu_virt_2_phys(mm, vend, testMode);
 
     ary[(*idx)++] = vstart;
     ary[(*idx)++] = vend;
