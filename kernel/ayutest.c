@@ -45,7 +45,7 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 	if ( !pgd || pgd_none(*pgd) )
 		return -1;
 
-    printk("{[(ayumsg)]} check 1 pgd_val, pgd_index = [0x%lx, %lu]\n", pgd_val(*pgd), pgd_index(address));
+    printk("{[(ayumsg)]} check 1 pgd_val, pgd_index = [0x%lx, %lu]\n", pgd_val(*pgd), pgd_index(v_addr));
 
 	pud = pud_offset(pgd, v_addr);
 	if ( !pud || pud_none(*pud) )
