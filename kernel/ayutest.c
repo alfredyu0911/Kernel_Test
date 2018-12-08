@@ -252,7 +252,7 @@ asmlinkage long sys_ayutest0(int pid, unsigned long *addr, unsigned long arySize
         for (vma = task->mm->mmap; vma; vma = vma->vm_next)
         {
             if ( idxAry+3 < arySize )
-                showinfo0(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry);
+                showinfo0(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry, testMode);
         }
     }
     return task->pid;
