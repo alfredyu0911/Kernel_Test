@@ -5,12 +5,12 @@
 #include <linux/sched.h>
 #include <linux/mm.h>
 
-unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level);
+unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_addr);
 unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int testMode);
 
-unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level)
+unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_addr)
 {
-    if ( !pte || pte_none(pte) )
+    if ( !pte || pte_none(*pte) )
     {
         if ( !pte )
             printk("{[(ayumsg)]} pte NULL !!!\n");
@@ -21,7 +21,7 @@ unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level)
 
     unsigned long psize = page_level_size(level);
     unsigned long pmask = page_level_mask(level);
-    unsigned long offset = virt_addr & ~pmask;
+    unsigned long offset = v_addr & ~pmask;
     unsigned long phys_addr = (phys_addr_t)pte_pfn(*pte) << PAGE_SHIFT;
     return (phys_addr | offset);
 }
@@ -40,7 +40,7 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 	pmd_t *pmd;
     pte_t *pte;
 
-	*level = PG_LEVEL_NONE;
+	level = PG_LEVEL_NONE;
 
 	if ( !pgd || pgd_none(*pgd) )
 		return -1;
@@ -53,7 +53,7 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 
     printk("{[(ayumsg)]} check 2\n");
 
-	*level = PG_LEVEL_1G;
+	level = PG_LEVEL_1G;
 	if ( pud_large(*pud) || !pud_present(*pud) )
         return ayu_pte_2_addr((pte_t *)pud, level);
 
@@ -65,24 +65,24 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 
     printk("{[(ayumsg)]} check 4\n");
 
-	*level = PG_LEVEL_2M;
+	level = PG_LEVEL_2M;
 	if ( pmd_large(*pmd) || !pmd_present(*pmd) )
 		return ayu_pte_2_addr((pte_t *)pmd, level);
 
     printk("{[(ayumsg)]} check 5 pmd_val, pmd_index = [0x%lx, %lu]\n", pmd_val(*pmd), pmd_index(v_addr));
     
-    *level = PG_LEVEL_4K;
+    level = PG_LEVEL_4K;
     if ( testMode == 1 )
     {
         printk("{[(ayumsg)]} check 6\n");
         pte = pte_offset_kernel(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(*pte, level);
+        p_addr = ayu_pte_2_addr(pte, level);
     }
     else
     {
         printk("{[(ayumsg)]} check 7\n");
         pte = pte_offset_map(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(*pte, level);
+        p_addr = ayu_pte_2_addr(pte, level);
         pte_unmap(pte);
     }
 
