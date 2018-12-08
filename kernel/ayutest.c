@@ -4,6 +4,7 @@
 #include <linux/linkage.h>
 #include <linux/sched.h>
 #include <linux/mm.h>
+#include <linux/highmem.h>
 
 unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_addr);
 unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int testMode);
