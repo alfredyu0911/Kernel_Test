@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    if ( argc != 3 )
+    if ( argc != 4 )
         return -1;
 
     unsigned long ary[SIZE];
@@ -15,9 +15,10 @@ int main(int argc, char *argv[])
     for ( i=0 ; i < SIZE ; i++ )
         ary[i] = 0;
 
-    int mode = atoi(argv[2]);
+    int callId = atoi(argv[2]) + 359;
+    int testMode = atoi(argv[3]);
     unsigned long pid = atoi(argv[1]);
-    long sys = syscall(359+mode, pid, ary, SIZE);
+    long sys = syscall(callId, pid, ary, SIZE, testMode);
     printf("test of system call 360, return : %ld\n", sys);
 
     for ( i=0 ; i < SIZE ; i=i+4 )
