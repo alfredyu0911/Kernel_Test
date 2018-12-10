@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
     long sys = syscall(callId, pid, ary, SIZE, testMode);
     printf("test of system call 360, return : %ld\n", sys);
 
-    for ( i=0 ; i < SIZE ; i=i+4 )
+    for ( i=0 ; i < SIZE ; i=i+5 )
     {
         if ( ary[i] != 0 && ary[i+1] != 0 )
             printf("vaddr[%lX | %lX]", ary[i], ary[i+1]);
@@ -34,9 +34,13 @@ int main(int argc, char *argv[])
             printf("  paddr{%lX |", ary[i+2]);
 
         if ( ary[i+3] == -1 )
-            printf(" --- }\n");
+            printf(" --- }");
         else
-            printf(" %lX}\n", ary[i+3]);
+            printf(" %lX}", ary[i+3]);
+
+        unsigned long unit = 0x1000;
+        unsigned long pageCount = (ary[i] - ary[i+1]) / unit;
+        printf("  ( %5.2f%% )\n", (ary[i+4]/pageCount)*100);
     }
 
     return 0;

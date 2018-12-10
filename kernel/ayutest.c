@@ -7,7 +7,7 @@
 #include <linux/highmem.h>
 
 unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_addr);
-unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int testMode);
+unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr);
 
 unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_addr)
 {
@@ -27,7 +27,7 @@ unsigned long ayu_pte_2_addr(pte_t *pte, unsigned int level, unsigned long v_add
     return (phys_addr | offset);
 }
 
-unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int testMode)
+unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr)
 {
     unsigned long p_addr;
 
@@ -46,46 +46,37 @@ unsigned long ayu_virt_2_phys(struct mm_struct *mm, unsigned long v_addr, int te
 	if ( !pgd || pgd_none(*pgd) )
 		return -1;
 
-    printk("{[(ayumsg)]} check 1 pgd_val, pgd_index = [0x%lx, %lu]\n", pgd_val(*pgd), pgd_index(v_addr));
+    // printk("{[(ayumsg)]} check 1 pgd_val, pgd_index = [0x%lx, %lu]\n", pgd_val(*pgd), pgd_index(v_addr));
 
 	pud = pud_offset(pgd, v_addr);
 	if ( !pud || pud_none(*pud) )
 		return -1;
 
-    printk("{[(ayumsg)]} check 2\n");
+    // printk("{[(ayumsg)]} check 2\n");
 
 	level = PG_LEVEL_1G;
 	if ( pud_large(*pud) || !pud_present(*pud) )
         return ayu_pte_2_addr((pte_t *)pud, level, v_addr);
 
-    printk("{[(ayumsg)]} check 3 pud_val = 0x%lx\n", pud_val(*pud));
+    // printk("{[(ayumsg)]} check 3 pud_val = 0x%lx\n", pud_val(*pud));
 
 	pmd = pmd_offset(pud, v_addr);
 	if ( pmd_none(*pmd) )
 		return -1;
 
-    printk("{[(ayumsg)]} check 4\n");
+    // printk("{[(ayumsg)]} check 4\n");
 
 	level = PG_LEVEL_2M;
 	if ( pmd_large(*pmd) || !pmd_present(*pmd) )
 		return ayu_pte_2_addr((pte_t *)pmd, level, v_addr);
 
-    printk("{[(ayumsg)]} check 5 pmd_val, pmd_index = [0x%lx, %lu]\n", pmd_val(*pmd), pmd_index(v_addr));
+    // printk("{[(ayumsg)]} check 5 pmd_val, pmd_index = [0x%lx, %lu]\n", pmd_val(*pmd), pmd_index(v_addr));
     
     level = PG_LEVEL_4K;
-    if ( testMode == 1 )
-    {
-        printk("{[(ayumsg)]} check 6\n");
-        pte = pte_offset_kernel(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(pte, level, v_addr);
-    }
-    else
-    {
-        printk("{[(ayumsg)]} check 7\n");
-        pte = pte_offset_map(pmd, v_addr);
-        p_addr = ayu_pte_2_addr(pte, level, v_addr);
-        pte_unmap(pte);
-    }
+    // printk("{[(ayumsg)]} check 7\n");
+    pte = pte_offset_map(pmd, v_addr);
+    p_addr = ayu_pte_2_addr(pte, level, v_addr);
+    pte_unmap(pte);
 
     return p_addr;
 }
@@ -196,17 +187,31 @@ void showinfo0(struct mm_struct *mm,
                unsigned long vstart,
                unsigned long vend,
                unsigned long *ary,
-               unsigned long *idx, 
-               int testMode)
+               unsigned long *idx)
 {
-    unsigned long ps = ayu_virt_2_phys(mm, vstart, testMode);
-    unsigned long pe = ayu_virt_2_phys(mm, vend, testMode);
+    unsigned long start = vma->vm_start;
+    unsigned long unit = 0x1000;
+
+    unsigned long pageCount = (vend - vstart) / unit;
+    unsigned long presentCount = 0;
+
+    while ( start < vend )
+    {
+        if ( ayu_virt_2_phys(mm, start) != -1 )
+            presentCount++;
+
+        start += unit;
+    }
+
+    unsigned long ps = ayu_virt_2_phys(mm, vstart);
+    unsigned long pe = ayu_virt_2_phys(mm, vend);
 
     ary[(*idx)++] = vstart;
     ary[(*idx)++] = vend;
     ary[(*idx)++] = ps;
     ary[(*idx)++] = pe;
-    printk("ayu kernel test msg 0 : v[0x%lX 0x%lX] p{0x%lX 0x%lX}\n", vstart, vend, ps, pe);
+    ary[(*idx)++] = presentCount;
+    printk("ayu kernel test msg 0 : v[ 0x%lX 0x%lX ] p{ 0x%lX 0x%lX } count( %lu )\n", vstart, vend, ps, pe, presentCount);
 }
 
 void showinfo1(struct mm_struct *mm,
@@ -241,7 +246,7 @@ void showinfo2(struct mm_struct *mm,
     printk("ayu kernel test msg 2 : v[0x%lX 0x%lX] p{0x%lX 0x%lX}\n", vstart, vend, ps, pe);
 }
 
-asmlinkage long sys_ayutest0(int pid, unsigned long *addr, unsigned long arySize, int testMode)
+asmlinkage long sys_ayutest0(int pid, unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
     struct vm_area_struct *vma = 0;
@@ -252,14 +257,14 @@ asmlinkage long sys_ayutest0(int pid, unsigned long *addr, unsigned long arySize
     {
         for (vma = task->mm->mmap; vma; vma = vma->vm_next)
         {
-            if ( idxAry+3 < arySize )
-                showinfo0(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry, testMode);
+            if ( idxAry+4 < arySize )
+                showinfo0(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry);
         }
     }
     return task->pid;
 }
 
-asmlinkage long sys_ayutest1(int pid, unsigned long *addr, unsigned long arySize, int testMode)
+asmlinkage long sys_ayutest1(int pid, unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
     struct vm_area_struct *vma = 0;
@@ -277,7 +282,7 @@ asmlinkage long sys_ayutest1(int pid, unsigned long *addr, unsigned long arySize
     return task->pid;
 }
 
-asmlinkage long sys_ayutest2(int pid, unsigned long *addr, unsigned long arySize, int testMode)
+asmlinkage long sys_ayutest2(int pid, unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
     struct vm_area_struct *vma = 0;
