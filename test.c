@@ -39,7 +39,8 @@ int main(int argc, char *argv[])
 
         unsigned long unit = 0x1000;
         unsigned long pageCount = (ary[i] - ary[i+1]) / unit;
-        printf("  ( %5.2f%% )\n", (double)(ary[i+4]/pageCount)*100);
+        double ratio = ((double)ary[i+4] / (double)pageCount) / 100.0;
+        printf("  ( %5.2f%% )\n", ratio);
     }
 
     return 0;
