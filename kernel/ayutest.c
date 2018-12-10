@@ -189,7 +189,7 @@ void showinfo0(struct mm_struct *mm,
                unsigned long *ary,
                unsigned long *idx)
 {
-    unsigned long start = vma->vm_start;
+    unsigned long start = vstart;
     unsigned long unit = 0x1000;
 
     unsigned long pageCount = (vend - vstart) / unit;
