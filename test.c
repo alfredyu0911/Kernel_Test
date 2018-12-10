@@ -66,7 +66,8 @@ int main(int argc, char *argv[])
     scanf("%lu", &pid);
     linux_survyTT(pid, ary2);
 
-    printf("\n\nshare memory result : \n");
+    printf(" ------------------------------------- \n");
+    printf("\nshare memory result : \n");
     for ( i=0 ; i < SIZE ; i=i+5 )
     {
         if ( ary1[i] == 0 || ary1[i+1] == 0 || ary1[i] == -1 || ary1[i+1] == -1 )
@@ -80,7 +81,7 @@ int main(int argc, char *argv[])
             // found the shared virtual memory interval
             if ( ary1[i] == ary2[j] && ary1[i+1] == ary2[j+1] )
             {
-                printf("[ %8lX | %8lX ]", ary1[i], ary1[i+1]);
+                printf("[ %8lX | %8lX ]\n", ary1[i], ary1[i+1]);
                 break;
             }
         }
