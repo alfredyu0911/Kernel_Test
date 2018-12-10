@@ -45,7 +45,7 @@ void linux_survyTT(unsigned long pid, unsigned long *ary)
 
 int main(int argc, char *argv[])
 {
-    if ( argc != 2 )
+    if ( argc != 1 )
         return -1;
 
     unsigned long ary1[SIZE];
