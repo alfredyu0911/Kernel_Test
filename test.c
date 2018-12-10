@@ -23,19 +23,19 @@ int main(int argc, char *argv[])
     for ( i=0 ; i < SIZE ; i=i+5 )
     {
         if ( ary[i] != 0 && ary[i+1] != 0 )
-            printf("vaddr[%lX | %lX]", ary[i], ary[i+1]);
+            printf("vaddr[%8lX | %8lX]", ary[i], ary[i+1]);
         else
             continue;
 
         if ( ary[i+2] == -1 )
             printf("  paddr{ --- |");
         else
-            printf("  paddr{%lX |", ary[i+2]);
+            printf("  paddr{%8lX |", ary[i+2]);
 
         if ( ary[i+3] == -1 )
             printf(" --- }");
         else
-            printf(" %lX}", ary[i+3]);
+            printf(" %8lX}", ary[i+3]);
 
         unsigned long unit = 0x1000;
         unsigned long pageCount = (ary[i+1] - ary[i]) / unit;
