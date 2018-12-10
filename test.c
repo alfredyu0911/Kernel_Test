@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
         totalPages += (ary[i+1] - ary[i]);
         totalPresentedCount += pageCount;
     }
-    double ratio = (double)totalPresentedCount / (double)totalPages;
-    printf("system allocate %6.2f%% of memory pages", ratio);
+    double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
+    printf("system allocate %6.2f%% of memory pages\n", ratio);
 
     return 0;
  }
