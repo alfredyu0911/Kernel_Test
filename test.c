@@ -28,12 +28,12 @@ int main(int argc, char *argv[])
             continue;
 
         if ( ary[i+2] == -1 )
-            printf("  paddr{ --- |");
+            printf("  paddr{ ------- |");
         else
             printf("  paddr{%8lX |", ary[i+2]);
 
         if ( ary[i+3] == -1 )
-            printf(" --- }");
+            printf(" ------- }");
         else
             printf(" %8lX}", ary[i+3]);
 
