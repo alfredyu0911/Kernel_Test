@@ -20,6 +20,8 @@ int main(int argc, char *argv[])
     long sys = syscall(callId, pid, ary, SIZE);
     printf("test of system call 360, return : %ld\n", sys);
 
+    unsigned long totalPages = 0;
+    unsigned long totalPresentedCount = 0;
     for ( i=0 ; i < SIZE ; i=i+5 )
     {
         if ( ary[i] != 0 && ary[i+1] != 0 )
@@ -41,7 +43,12 @@ int main(int argc, char *argv[])
         unsigned long pageCount = (ary[i+1] - ary[i]) / unit;
         double ratio = ((double)ary[i+4] / (double)pageCount) * 100.0;
         printf("  ( %6.2f%% )\n", ratio);
+
+        totalPages += (ary[i+1] - ary[i]);
+        totalPresentedCount += pageCount;
     }
+    double ratio = (double)totalPresentedCount / (double)totalPages;
+    printf("system allocate %6.2f%% of memory pages", ratio);
 
     return 0;
  }
