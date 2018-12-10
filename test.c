@@ -8,7 +8,7 @@
 
 void linux_survyTT(unsigned long pid, unsigned long *ary)
 {
-    long sys = syscall(SYSTEM_CALL_ID, pid, ary, SIZE);
+    syscall(SYSTEM_CALL_ID, pid, ary, SIZE);
 
     unsigned long totalPages = 0;
     unsigned long totalPresentedCount = 0;
@@ -23,7 +23,7 @@ void linux_survyTT(unsigned long pid, unsigned long *ary)
         if ( ary[i+2] == -1 )
             printf("  paddr{ -------- |");
         else
-            printf("  paddr{% 8lX |", ary[i+2]);
+            printf("  paddr{ %8lX |", ary[i+2]);
 
         if ( ary[i+3] == -1 )
             printf(" -------- }");
