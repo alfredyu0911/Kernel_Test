@@ -39,6 +39,12 @@ void *inc_x(void *x_void_ptr)
     return NULL;
 }
 
+/**
+ * memory layout
+ * 將長度為 N 的陣列切為兩份
+ * 前四分之一 0 ~ (N/4 - 1) : 儲存 vma 提供的位址區間、以及其對應的相關資訊
+ * 後四分之三 N/4 ~ N-1 : 儲存以 page size 為單位的所有區間、以及其對應的相關資訊
+*/
 void show_linux_survey_result(unsigned long *ary)
 {
     unsigned long totalPages = 0;
@@ -53,12 +59,12 @@ void show_linux_survey_result(unsigned long *ary)
         else
             continue;
 
-        if ( ary[i+2] == -1 )
+        if ( ary[i+2] == PAGE_NOT_PRESENTED )
             printf("  paddr{ ---------- |");
         else
             printf("  paddr{ 0x%08lX |", ary[i+2]);
 
-        if ( ary[i+3] == -1 )
+        if ( ary[i+3] == PAGE_NOT_PRESENTED )
             printf(" ---------- }");
         else
             printf(" 0x%08lX }", ary[i+3]);
@@ -97,8 +103,17 @@ void linux_survey_VV(unsigned long *ary)
 */
 void search_and_show_SharedInterval()
 {
-    printf(" ------------------------------------- \n");
-    printf("\nshared memory result : \n");
+    // 因輸出結果資料量較大，這邊以寫檔的方式輸出.
+    FILE *fout;
+    fout=fopen("res.txt","w+t");
+    if ( !fout )
+    {
+        printf("fopen fail\n");
+        return;
+    }
+
+    fprintf(fout, " ------------------------------------- \n");
+    fprintf(fout, "\nshared memory result : \n");
     int i, j;
     for ( i = (MEMORY_SIZE/4) ; i < MEMORY_SIZE ; i = i+5 )
     {
@@ -117,13 +132,11 @@ void search_and_show_SharedInterval()
             // search if the physical address is match
             if ( p_addr_1_start == p_addr_2_start )
             {
-                printf("[ 0x%08lX | 0x%08lX ] & ", v_addr_1_start, result_1[i+1]);
-                printf("[ 0x%08lX | 0x%08lX ] share page ", v_addr_2_start, result_2[j+1]);
-                printf("[ 0x%08lX ]\n", p_addr_1_start);
-
+                fprintf(fout, "[ 0x%08lX ] & ", v_addr_1_start);
+                fprintf(fout, "[ 0x%08lX ] share page ", v_addr_2_start);
+                fprintf(fout, "[ 0x%08lX ]\n", p_addr_1_start);
                 break;
             }
-            
         }
     }
 }
