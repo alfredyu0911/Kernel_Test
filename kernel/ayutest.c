@@ -147,11 +147,11 @@ unsigned long sys_linux_project(int pid, unsigned long *addr, unsigned long aryS
         {
             // 前四分之一放 vma 提供的區間的對應資訊.
             if ( idxAry1+4 < (arySize/4) )
-                showinfo1(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry1);
+                storeInfo1(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry1);
 
             // 前四分之三放所有 page 對應的資訊
             if ( idxAry2+4 < (arySize) )
-                showinfo2(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry2);
+                storeInfo2(task->mm, vma->vm_start, vma->vm_end, addr, &idxAry2);
         }
     }
     return task->pid;
