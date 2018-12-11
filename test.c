@@ -49,27 +49,27 @@ void show_linux_survey_result(unsigned long *ary)
     unsigned int i = 0;
     for ( i = 0 ; i < MEMORY_SIZE ; i = i + 5 )
     {
-        if (ary[i] != 0 && ary[i + 1] != 0)
-            printf("vaddr[ 0x%08lX | 0x%08lX ]", ary[i], ary[i + 1]);
+        if ( ary[i] != 0 && ary[i+1] != 0 )
+            printf("vaddr[ 0x%08lX | 0x%08lX ]", ary[i], ary[i+1]);
         else
             continue;
 
-        if (ary[i + 2] == -1)
+        if ( ary[i+2] == -1 )
             printf("  paddr{ ---------- |");
         else
-            printf("  paddr{ 0x%08lX |", ary[i + 2]);
+            printf("  paddr{ 0x%08lX |", ary[i+2]);
 
-        if (ary[i + 3] == -1)
+        if ( ary[i+3] == -1 )
             printf(" ---------- }");
         else
-            printf(" 0x%08lX }", ary[i + 3]);
+            printf(" 0x%08lX }", ary[i+3]);
 
-        unsigned long pageCount = (ary[i + 1] - ary[i]) / BYTES_PER_PAGE;
-        double ratio = ((double)ary[i + 4] / (double)pageCount) * 100.0;
-        printf("  ( %4lu, %4lu, %6.2f%% )\n", ary[i + 4], pageCount, ratio);
+        unsigned long pageCount = (ary[i+1] - ary[i]) / BYTES_PER_PAGE;
+        double ratio = ((double)ary[i+4] / (double)pageCount) * 100.0;
+        printf("  ( %4lu, %4lu, %6.2f%% )\n", ary[i+4], pageCount, ratio);
 
         totalPages += pageCount;
-        totalPresentedCount += ary[i + 4];
+        totalPresentedCount += ary[i+4];
     }
     double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
     printf("presented pages: %3lu    total pages: %3lu\n", totalPresentedCount, totalPages);
@@ -116,8 +116,19 @@ void search_and_show_SharedInterval()
             if ( b1 && b2 && b3 )
             {
                 // the memory is shared
-                printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i + 1], result_2[j], result_2[j + 1]);
-                printf(" shared page [ 0x%08lX | 0x%08lX ]\n", result_1[i + 2], result_1[i + 3]);
+                printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i+1], result_2[j], result_2[j+1]);
+                printf(" shared %lu page [ 0x%08lX | 0x%08lX ]\n", result_1[i+4], result_1[i+2], result_1[i+3]);
+
+                if ( result_1[i+2] == -1 )
+                    printf("  paddr[ ---------- |");
+                else
+                    printf("  paddr[ 0x%08lX |", result_1[i+2]);
+
+                if ( result_1[i+3] == -1 )
+                    printf(" ---------- ]\n");
+                else
+                    printf(" 0x%08lX ]\n", result_1[i+3]);
+
                 break;
             }
         }
