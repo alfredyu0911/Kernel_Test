@@ -117,7 +117,7 @@ void search_and_show_SharedInterval()
             {
                 // the memory is shared
                 printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i+1], result_2[j], result_2[j+1]);
-                printf(" shared %lu page within ", result_1[i+4]);
+                printf(" share %4lu page in ", result_1[i+4]);
 
                 if ( result_1[i+2] == -1 )
                     printf("[ ---------- |");
