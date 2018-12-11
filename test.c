@@ -112,6 +112,8 @@ void search_and_show_SharedInterval()
         return;
     }
 
+    int count = 0;
+
     fprintf(fout, " ------------------------------------- \n");
     fprintf(fout, "\nshared memory result : \n");
     int i, j;
@@ -135,10 +137,12 @@ void search_and_show_SharedInterval()
                 fprintf(fout, "[ 0x%08lX ] & ", v_addr_1_start);
                 fprintf(fout, "[ 0x%08lX ] share page ", v_addr_2_start);
                 fprintf(fout, "[ 0x%08lX ]\n", p_addr_1_start);
+                count++;
                 break;
             }
         }
     }
+    printf("total %d of pages are shared\n", count);
 }
 
 void project_Part_I()
