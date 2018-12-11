@@ -106,8 +106,8 @@ void search_and_show_SharedInterval()
             if (result_1[i + 2] == result_2[j + 2] && result_1[i + 3] == result_2[j + 3])
             {
                 // the physical address is match, i.e. the memory is shared
-                printf("interval [ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i + 1], result_2[j], result_2[j + 1]);
-                printf(" shared physical page [ 0x%08lX | 0x%08lX ]", result_1[i + 2], result_1[i + 3]);
+                printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i + 1], result_2[j], result_2[j + 1]);
+                printf(" shared page [ 0x%08lX | 0x%08lX ]\n", result_1[i + 2], result_1[i + 3]);
                 printf("[ 0x%08lX | 0x%08lX ]\n", result_1[i], result_1[i + 1]);
                 break;
             }
