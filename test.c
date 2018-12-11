@@ -189,6 +189,13 @@ int project_Part_II()
     return 0;
 }
 
+/**
+ * memory layout
+ * 將長度為 N 的陣列切為兩份
+ * 前四分之一 0 ~ (N/4 - 1) : 儲存 vma 提供的位址區間、以及其對應的相關資訊
+ * 後四分之三 N/4 ~ N-1 : 儲存以 page size 為單位的所有區間、以及其對應的相關資訊
+*/
+
 int main(int argc, char *argv[])
 {
     if (argc != 2)
