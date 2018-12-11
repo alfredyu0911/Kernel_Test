@@ -13,6 +13,9 @@
 unsigned long result_1[MEMORY_SIZE];
 unsigned long result_2[MEMORY_SIZE];
 
+void show_linux_survey_result(unsigned long *ary);
+void search_and_show_SharedInterval();
+
 void linux_survey_TT(unsigned long pid, unsigned long *ary);
 void linux_survey_VV(unsigned long *ary);
 
@@ -23,87 +26,93 @@ int project_Part_II();
 void *inc_x(void *x_void_ptr)
 {
     /* increment input parameter to 100 */
-    int *x_ptr = (int *)x_void_ptr; 
-    while ( ++(*x_ptr) < 100 );
+    int *x_ptr = (int *)x_void_ptr;
+    while (++(*x_ptr) < 100)
+        ;
 
     printf("x increment finished\n");
     linux_survey_VV(result_1);
-    
+
     return NULL;
+}
+
+void show_linux_survey_result(unsigned long *ary)
+{
+    unsigned long totalPages = 0;
+    unsigned long totalPresentedCount = 0;
+    unsigned int i = 0;
+    for ( i = 0 ; i < MEMORY_SIZE ; i = i + 5 )
+    {
+        if (ary[i] != 0 && ary[i + 1] != 0)
+            printf("vaddr[ 0x%08lX | 0x%08lX ]", ary[i], ary[i + 1]);
+        else
+            continue;
+
+        if (ary[i + 2] == -1)
+            printf("  paddr{ ---------- |");
+        else
+            printf("  paddr{ 0x%08lX |", ary[i + 2]);
+
+        if (ary[i + 3] == -1)
+            printf(" ---------- }");
+        else
+            printf(" 0x%08lX }", ary[i + 3]);
+
+        unsigned long pageCount = (ary[i + 1] - ary[i]) / BYTES_PER_PAGE;
+        double ratio = ((double)ary[i + 4] / (double)pageCount) * 100.0;
+        printf("  ( %3lu, %3lu, %6.2f%% )\n", ary[i + 4], pageCount, ratio);
+
+        totalPages += pageCount;
+        totalPresentedCount += ary[i + 4];
+    }
+    double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
+    printf("presented pages: %3lu    total pages: %3lu\n", totalPresentedCount, totalPages);
+    printf("system allocate %6.2f%% of memory pages\n", ratio);
 }
 
 void linux_survey_TT(unsigned long pid, unsigned long *ary)
 {
     unsigned long ret = syscall(SYSTEM_CALL_ID_PART_I, pid, ary, MEMORY_SIZE);
-    printf("calling system call %d, return : %lu", SYSTEM_CALL_ID_PART_I, ret);
+    printf("calling system call %d, return : %lu\n", SYSTEM_CALL_ID_PART_I, ret);
 
-    unsigned long totalPages = 0;
-    unsigned long totalPresentedCount = 0;
-    unsigned int i=0;
-    for ( i=0 ; i < MEMORY_SIZE ; i=i+5 )
-    {
-        if ( ary[i] != 0 && ary[i+1] != 0 )
-            printf("vaddr[ %8lX | %8lX ]", ary[i], ary[i+1]);
-        else
-            continue;
-
-        if ( ary[i+2] == -1 )
-            printf("  paddr{ -------- |");
-        else
-            printf("  paddr{ %8lX |", ary[i+2]);
-
-        if ( ary[i+3] == -1 )
-            printf(" -------- }");
-        else
-            printf(" %8lX }", ary[i+3]);
-
-        unsigned long pageCount = (ary[i+1] - ary[i]) / BYTES_PER_PAGE;
-        double ratio = ((double)ary[i+4] / (double)pageCount) * 100.0;
-        printf("  ( %3lu, %3lu, %6.2f%% )\n", ary[i+4], pageCount, ratio);
-
-        totalPages += pageCount;
-        totalPresentedCount += ary[i+4];
-    }
-    double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
-    printf("presented pages: %3lu    total pages: %3lu\n", totalPresentedCount, totalPages);
-    printf("system allocate %6.2f%% of memory pages\n", ratio);
+    show_linux_survey_result(ary);
 }
 
 void linux_survey_VV(unsigned long *ary)
 {
     unsigned long ret = syscall(SYSTEM_CALL_ID_PART_II, ary, MEMORY_SIZE);
-    printf("calling system call %d, return : %lu", SYSTEM_CALL_ID_PART_II, ret);
+    printf("calling system call %d, return : %lu\n", SYSTEM_CALL_ID_PART_II, ret);
 
-    unsigned long totalPages = 0;
-    unsigned long totalPresentedCount = 0;
-    unsigned int i=0;
-    for ( i=0 ; i < MEMORY_SIZE ; i=i+5 )
+    show_linux_survey_result(ary);
+}
+
+void search_and_show_SharedInterval()
+{
+    printf(" ------------------------------------- \n");
+    printf("\nshared memory result : \n");
+    int i, j;
+    for (i = 0; i < MEMORY_SIZE; i = i + 5)
     {
-        if ( ary[i] != 0 && ary[i+1] != 0 )
-            printf("vaddr[ %8lX | %8lX ]", ary[i], ary[i+1]);
-        else
+        if (result_1[i] == 0 || result_1[i + 1] == 0 || result_1[i + 2] == -1 || result_1[i + 3] == -1)
             continue;
 
-        if ( ary[i+2] == -1 )
-            printf("  paddr{ -------- |");
-        else
-            printf("  paddr{ %8lX |", ary[i+2]);
+        for (j = 0; j < MEMORY_SIZE; j = j + 5)
+        {
+            // exclude ( empty result array || if the page is not presented )
+            if ((result_2[j] == 0 || result_2[j + 1] == 0) || (result_2[j + 2] == -1 || result_2[j + 3] == -1))
+                continue;
 
-        if ( ary[i+3] == -1 )
-            printf(" -------- }");
-        else
-            printf(" %8lX }", ary[i+3]);
-
-        unsigned long pageCount = (ary[i+1] - ary[i]) / BYTES_PER_PAGE;
-        double ratio = ((double)ary[i+4] / (double)pageCount) * 100.0;
-        printf("  ( %3lu, %3lu, %6.2f%% )\n", ary[i+4], pageCount, ratio);
-
-        totalPages += pageCount;
-        totalPresentedCount += ary[i+4];
+            // search if the physical address is match
+            if (result_1[i + 2] == result_2[j + 2] && result_1[i + 3] == result_2[j + 3])
+            {
+                // the physical address is match, i.e. the memory is shared
+                printf("interval [ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i + 1], result_2[j], result_2[j + 1]);
+                printf(" shared physical page [ 0x%08lX | 0x%08lX ]", result_1[i + 2], result_1[i + 3]);
+                printf("[ 0x%08lX | 0x%08lX ]\n", result_1[i], result_1[i + 1]);
+                break;
+            }
+        }
     }
-    double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
-    printf("presented pages: %3lu    total pages: %3lu\n", totalPresentedCount, totalPages);
-    printf("system allocate %6.2f%% of memory pages\n", ratio);
 }
 
 void project_Part_I()
@@ -119,57 +128,33 @@ void project_Part_I()
     scanf("%lu", &pid);
     linux_survey_TT(pid, result_2);
 
-    printf(" ------------------------------------- \n");
-    printf("\nshared memory result : \n");
-    for ( i=0 ; i < MEMORY_SIZE ; i=i+5 )
-    {
-        if ( result_1[i] == 0 || result_1[i+1] == 0 || result_1[i] == -1 || result_1[i+1] == -1 )
-            continue;
-            
-        for ( j=0 ; j < MEMORY_SIZE ; j=j+5 )
-        {
-            // exclude empty result array
-            if ( result_2[j] == 0 || result_2[j+1] == 0 )
-                continue;
-
-            // exclude if the page is not presented
-            if ( result_2[j+2] == -1 || result_2[j+3] == -1 )
-                continue;
-
-            // search if the physical address is match
-            if ( result_1[i+2] == result_2[j+2] && result_1[i+3] == result_2[j+3] )
-            {
-                // the physical address is match, i.e. the memory is shared
-                printf("[ %8lX | %8lX ]\n", result_1[i], result_1[i+1]);
-                break;
-            }
-        }
-    }
+    search_and_show_SharedInterval();
 }
 
 int project_Part_II()
 {
     int x = 0, y = 0;
-    printf("x: %d, y: %d\n", x, y);    /* show the initial values of x and y */
+    printf("x: %d, y: %d\n", x, y); /* show the initial values of x and y */
 
     /* this variable is our reference to the second thread */
     pthread_t inc_x_thread;
 
     /* create a second thread which executes inc_x(&x) */
-    if ( pthread_create(&inc_x_thread, NULL, inc_x, &x) )
+    if (pthread_create(&inc_x_thread, NULL, inc_x, &x))
     {
         fprintf(stderr, "Error creating thread\n");
         return 1;
     }
-    
+
     /* increment y to 100 in the first thread */
-    while ( ++y < 100 );
+    while (++y < 100)
+        ;
 
     printf("y increment finished\n");
     linux_survey_VV(result_2);
 
     /* wait for the second thread to finish */
-    if ( pthread_join(inc_x_thread, NULL) )
+    if (pthread_join(inc_x_thread, NULL))
     {
         fprintf(stderr, "Error joining thread\n");
         return 2;
@@ -179,23 +164,24 @@ int project_Part_II()
     printf("x: %d, y: %d\n", x, y);
 
     // Code to process and report the final results
+    search_and_show_SharedInterval();
 
     return 0;
 }
 
 int main(int argc, char *argv[])
 {
-    if ( argc != 2 )
+    if (argc != 2)
         return -1;
 
     memset(result_1, 0x0, MEMORY_SIZE);
     memset(result_2, 0x0, MEMORY_SIZE);
     int projectPart = atoi(argv[1]);
 
-    if ( projectPart == 1 )
+    if (projectPart == 1)
         project_Part_I();
-    else if ( projectPart == 2 )
+    else if (projectPart == 2)
         project_Part_II();
-    
+
     return 0;
- }
+}
