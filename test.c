@@ -10,6 +10,9 @@
 #define SYSTEM_CALL_ID_PART_I 359
 #define SYSTEM_CALL_ID_PART_II 360
 
+#define ARRAY_EMPTY 0
+#define PAGE_NOT_PRESENTED -1
+
 unsigned long result_1[MEMORY_SIZE];
 unsigned long result_2[MEMORY_SIZE];
 
@@ -21,12 +24,6 @@ void linux_survey_VV(unsigned long *ary);
 
 void project_Part_I();
 int project_Part_II();
-
-typedef enum enBool
-{
-    false = 0,
-    true = 1
-}bool;
 
 /* this function is run by the second thread */
 void *inc_x(void *x_void_ptr)
@@ -47,7 +44,9 @@ void show_linux_survey_result(unsigned long *ary)
     unsigned long totalPages = 0;
     unsigned long totalPresentedCount = 0;
     unsigned int i = 0;
-    for ( i = 0 ; i < MEMORY_SIZE ; i = i + 5 )
+
+    // only looking for first 1/4 datas
+    for ( i = 0 ; i < MEMORY_SIZE/4 ; i = i + 5 )
     {
         if ( ary[i] != 0 && ary[i+1] != 0 )
             printf("vaddr[ 0x%08lX | 0x%08lX ]", ary[i], ary[i+1]);
@@ -88,49 +87,43 @@ void linux_survey_VV(unsigned long *ary)
 {
     unsigned long ret = syscall(SYSTEM_CALL_ID_PART_II, ary, MEMORY_SIZE);
     printf("calling system call %d, return : %lu\n", SYSTEM_CALL_ID_PART_II, ret);
-
-    show_linux_survey_result(ary);
 }
 
+/**
+ * memory layout
+ * 將長度為 N 的陣列切為兩份
+ * 前四分之一 0 ~ (N/4 - 1) : 儲存 vma 提供的位址區間、以及其對應的相關資訊
+ * 後四分之三 N/4 ~ N-1 : 儲存以 page size 為單位的所有區間、以及其對應的相關資訊
+*/
 void search_and_show_SharedInterval()
 {
     printf(" ------------------------------------- \n");
     printf("\nshared memory result : \n");
     int i, j;
-    for ( i = 0 ; i < MEMORY_SIZE ; i = i+5 )
+    for ( i = (MEMORY_SIZE/4) ; i < MEMORY_SIZE ; i = i+5 )
     {
-        // exclude ( empty result array || if the page is not presented )
-        if ( (result_1[i] == 0 || result_1[i+1] == 0) || (result_1[i+2] == -1 && result_1[i+3] == -1) )
+        unsigned long v_addr_1_start = result_1[i];
+        unsigned long p_addr_1_start = result_1[i+2];
+        if ( v_addr_1_start == ARRAY_EMPTY || p_addr_1_start == PAGE_NOT_PRESENTED )
             continue;
 
-        for ( j = 0 ; j < MEMORY_SIZE ; j = j+5 )
+        for ( j = (MEMORY_SIZE/4) ; j < MEMORY_SIZE ; j = j+5 )
         {
-            // exclude ( empty result array || if the page is not presented )
-            if ( (result_2[j] == 0 || result_2[j+1] == 0) || (result_2[j+2] == -1 && result_2[j+3] == -1) )
+            unsigned long v_addr_2_start = result_2[j];
+            unsigned long p_addr_2_start = result_2[j+2];
+            if ( v_addr_2_start == ARRAY_EMPTY || p_addr_2_start == PAGE_NOT_PRESENTED )
                 continue;
 
             // search if the physical address is match
-            bool b1 = result_1[i+2] == result_2[j+2];
-            bool b2 = result_1[i+3] == result_2[j+3];
-            bool b3 = result_1[i+4] == result_2[j+4];
-            if ( b1 && b2 && b3 )
+            if ( p_addr_1_start == p_addr_2_start )
             {
-                // the memory is shared
-                printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i+1], result_2[j], result_2[j+1]);
-                printf(" share %4lu page in ", result_1[i+4]);
-
-                if ( result_1[i+2] == -1 )
-                    printf("[ ---------- |");
-                else
-                    printf("[ 0x%08lX |", result_1[i+2]);
-
-                if ( result_1[i+3] == -1 )
-                    printf(" ---------- ]\n");
-                else
-                    printf(" 0x%08lX ]\n", result_1[i+3]);
+                printf("[ 0x%08lX | 0x%08lX ] & ", v_addr_1_start, result_1[i+1]);
+                printf("[ 0x%08lX | 0x%08lX ] share page ", v_addr_2_start, result_2[j+1]);
+                printf("[ 0x%08lX ]\n", p_addr_1_start);
 
                 break;
             }
+            
         }
     }
 }
@@ -160,17 +153,10 @@ int project_Part_II()
     pthread_t inc_x_thread;
 
     /* create a second thread which executes inc_x(&x) */
-    if (pthread_create(&inc_x_thread, NULL, inc_x, &x))
+    if ( pthread_create(&inc_x_thread, NULL, inc_x, &x) )
     {
         fprintf(stderr, "Error creating thread\n");
         return 1;
-    }
-
-    /* wait for the second thread to finish */
-    if (pthread_join(inc_x_thread, NULL))
-    {
-        fprintf(stderr, "Error joining thread\n");
-        return 2;
     }
 
     /* increment y to 100 in the first thread */
@@ -180,21 +166,27 @@ int project_Part_II()
     printf("y increment finished\n");
     linux_survey_VV(result_2);
 
+    /* wait for the second thread to finish */
+    if ( pthread_join(inc_x_thread, NULL) )
+    {
+        fprintf(stderr, "Error joining thread\n");
+        return 2;
+    }
+
     /* show the results - x is now 100 thanks to the second thread */
     printf("x: %d, y: %d\n", x, y);
 
     // Code to process and report the final results
-    search_and_show_SharedInterval();
+    // Part II doesn't have to show the shared physical address
+    printf(" Part II result of created thread : \n");
+    show_linux_survey_result(result_1);
+    printf(" +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+- \n");
+    printf(" Part II result of original thread : \n");
+    show_linux_survey_result(result_2);
+    //search_and_show_SharedInterval();
 
     return 0;
 }
-
-/**
- * memory layout
- * 將長度為 N 的陣列切為兩份
- * 前四分之一 0 ~ (N/4 - 1) : 儲存 vma 提供的位址區間、以及其對應的相關資訊
- * 後四分之三 N/4 ~ N-1 : 儲存以 page size 為單位的所有區間、以及其對應的相關資訊
-*/
 
 int main(int argc, char *argv[])
 {
