@@ -22,6 +22,12 @@ void linux_survey_VV(unsigned long *ary);
 void project_Part_I();
 int project_Part_II();
 
+typedef enum enBool
+{
+    false = 0,
+    true = 1
+}bool;
+
 /* this function is run by the second thread */
 void *inc_x(void *x_void_ptr)
 {
@@ -60,7 +66,7 @@ void show_linux_survey_result(unsigned long *ary)
 
         unsigned long pageCount = (ary[i + 1] - ary[i]) / BYTES_PER_PAGE;
         double ratio = ((double)ary[i + 4] / (double)pageCount) * 100.0;
-        printf("  ( %3lu, %3lu, %6.2f%% )\n", ary[i + 4], pageCount, ratio);
+        printf("  ( %4lu, %4lu, %6.2f%% )\n", ary[i + 4], pageCount, ratio);
 
         totalPages += pageCount;
         totalPresentedCount += ary[i + 4];
@@ -91,21 +97,25 @@ void search_and_show_SharedInterval()
     printf(" ------------------------------------- \n");
     printf("\nshared memory result : \n");
     int i, j;
-    for (i = 0; i < MEMORY_SIZE; i = i + 5)
+    for ( i = 0 ; i < MEMORY_SIZE ; i = i+5 )
     {
-        if (result_1[i] == 0 || result_1[i + 1] == 0 || result_1[i + 2] == -1 || result_1[i + 3] == -1)
+        // exclude ( empty result array || if the page is not presented )
+        if ( (result_1[i] == 0 || result_1[i+1] == 0) || (result_1[i+2] == -1 && result_1[i+3] == -1) )
             continue;
 
-        for (j = 0; j < MEMORY_SIZE; j = j + 5)
+        for ( j = 0 ; j < MEMORY_SIZE ; j = j+5 )
         {
             // exclude ( empty result array || if the page is not presented )
-            if ((result_2[j] == 0 || result_2[j + 1] == 0) || (result_2[j + 2] == -1 || result_2[j + 3] == -1))
+            if ( (result_2[j] == 0 || result_2[j+1] == 0) || (result_2[j+2] == -1 && result_2[j+3] == -1) )
                 continue;
 
             // search if the physical address is match
-            if (result_1[i + 2] == result_2[j + 2] && result_1[i + 3] == result_2[j + 3])
+            bool b1 = result_1[i+2] == result_2[j+2];
+            bool b2 = result_1[i+3] == result_2[j+3];
+            bool b3 = result_1[i+4] == result_2[j+4];
+            if ( b1 && b2 && b3 )
             {
-                // the physical address is match, i.e. the memory is shared
+                // the memory is shared
                 printf("[ 0x%08lX | 0x%08lX ] & [ 0x%08lX | 0x%08lX ]", result_1[i], result_1[i + 1], result_2[j], result_2[j + 1]);
                 printf(" shared page [ 0x%08lX | 0x%08lX ]\n", result_1[i + 2], result_1[i + 3]);
                 break;
