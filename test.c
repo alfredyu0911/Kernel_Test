@@ -17,7 +17,7 @@ void linux_survey_TT(unsigned long pid, unsigned long *ary);
 void linux_survey_VV(unsigned long *ary);
 
 void project_Part_I();
-void project_Part_II();
+int project_Part_II();
 
 /* this function is run by the second thread */
 void *inc_x(void *x_void_ptr)
