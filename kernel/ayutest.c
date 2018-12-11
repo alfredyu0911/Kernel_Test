@@ -99,7 +99,7 @@ void showinfoI(struct mm_struct *mm,
         if ( ayu_virt_2_phys(mm, start) != -1 )
             presentCount++;
 
-        start += unit;
+        start += BYTES_PER_PAGE;
     }
 
     unsigned long ps = ayu_virt_2_phys(mm, vstart);
