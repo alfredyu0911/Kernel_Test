@@ -112,12 +112,12 @@ void storeInfo2(struct mm_struct *mm,
     unsigned long start = vstart;
     while ( start < vend )
     {
-        unsigned long ps = ayu_virt_2_phys(mm, vstart);
+        unsigned long ps = ayu_virt_2_phys(mm, start);
 
         // the size of interval is one page
         // so the information of end is not require
         // and this page is presented or not is determinate by the virtual address is successfully tranform
-        ary[(*idx)++] = vstart;
+        ary[(*idx)++] = start;
         ary[(*idx)++] = 0;
         ary[(*idx)++] = ps;
         ary[(*idx)++] = 0;
