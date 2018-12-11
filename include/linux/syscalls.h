@@ -886,5 +886,5 @@ asmlinkage long sys_execveat(int dfd, const char __user *filename,
 
 asmlinkage unsigned long sys_linux_project_partI(int pid, unsigned long *addr, unsigned long arySize);
 
-asmlinkage unsigned long sys_linux_project_partII(int pid, unsigned long *addr, unsigned long arySize);
+asmlinkage unsigned long sys_linux_project_partII(unsigned long *addr, unsigned long arySize);
 
