@@ -162,7 +162,7 @@ void search_and_show_SharedInterval()
     double per1 = (double)count / (double)totalCount1 * 100.0;
     double per2 = (double)count / (double)totalCount2 * 100.0;
     printf("total %d of pages are shared.\n(%6.2f%%/%6.2f%% of all pages)\n", count, per1, per2);
-    printf("all share info is stored at .//res.txt\n");
+    printf("all share info is stored at ./res.txt\n");
     per1 = (double)count / (double)totalPresentedCount1 * 100.0;
     per2 = (double)count / (double)totalPresentedCount2 * 100.0;
     printf("(%6.2f%% / %6.2f%% of presented pages)\n", per1, per2);
