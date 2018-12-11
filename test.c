@@ -108,8 +108,6 @@ void linux_survey_VV(unsigned long *ary)
 
 void project_Part_I()
 {
-    memset(result_1, 0x0, MEMORY_SIZE);
-    memset(result_2, 0x0, MEMORY_SIZE);
     unsigned int i, j;
 
     unsigned long pid;
@@ -130,13 +128,19 @@ void project_Part_I()
             
         for ( j=0 ; j < MEMORY_SIZE ; j=j+5 )
         {
-            if ( result_2[j] == 0 || result_2[j+1] == 0 || result_2[j] == -1 || result_2[j+1] == -1 )
+            // exclude empty result array
+            if ( result_2[j] == 0 || result_2[j+1] == 0 )
                 continue;
 
-            // found the shared virtual memory interval
+            // exclude if the page is not presented
+            if ( result_2[j+2] == -1 || result_2[j+3] == -1 )
+                continue;
+
+            // search if the physical address is match
             if ( result_1[i+2] == result_2[j+2] && result_1[i+3] == result_2[j+3] )
             {
-                printf("[ %8lX | %8lX ]\n", result_1[i+2], result_1[i+3]);
+                // the physical address is match, i.e. the memory is shared
+                printf("[ %8lX | %8lX ]\n", result_1[i], result_1[i+1]);
                 break;
             }
         }
@@ -184,6 +188,8 @@ int main(int argc, char *argv[])
     if ( argc != 2 )
         return -1;
 
+    memset(result_1, 0x0, MEMORY_SIZE);
+    memset(result_2, 0x0, MEMORY_SIZE);
     int projectPart = atoi(argv[1]);
 
     if ( projectPart == 1 )

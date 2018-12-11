@@ -112,7 +112,7 @@ void showinfoI(struct mm_struct *mm,
     ary[(*idx)++] = presentCount;
 }
 
-asmlinkage unsigned long sys_linux_project_partI(int pid, unsigned long *addr, unsigned long arySize)
+unsigned long sys_linux_project(int pid, unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
     struct vm_area_struct *vma = 0;
@@ -130,34 +130,48 @@ asmlinkage unsigned long sys_linux_project_partI(int pid, unsigned long *addr, u
     return task->pid;
 }
 
+asmlinkage unsigned long sys_linux_project_partI(int pid, unsigned long *addr, unsigned long arySize)
+{
+    return sys_linux_project(pid, addr, arySize);
+}
+
 asmlinkage unsigned long sys_linux_project_partII(unsigned long *addr, unsigned long arySize)
 {
-    struct task_struct *task = current;
-    struct vm_area_struct *vma = 0;
-    pid_t pid;
+    return sys_linux_project(current->pid, addr, arySize);
+    // struct task_struct *task = pid_task(find_vpid(current->pid), PIDTYPE_PID);
+    // struct vm_area_struct *vma = 0;
+    // pid_t pid;
+    // g_DevStep = DevStep;
 
-    unsigned long idxAry = 0;
+    // unsigned long idxAry = 0;
 
-    if (task->mm && task->mm->mmap)
-    {
-        for (vma = task->mm->mmap; vma; vma = vma->vm_next)
-        {
-            rcu_read_lock();
+    // if (task->mm && task->mm->mmap)
+    // {
+    //     for (vma = task->mm->mmap; vma; vma = vma->vm_next)
+    //     {
+    //         rcu_read_lock();
 
-            struct task_struct *thread = current;
-            while_each_thread(current, thread) 
-            {
-                if ( current != thread && thread -> state == TASK_RUNNING )
-                {
-                    pid = thread->pid;
-                    if ( idxAry+4 < arySize )
-                        showinfoI(thread, vma->vm_start, vma->vm_end, addr, &idxAry);
-                }
-            };
+    //         struct task_struct *thread = current;
+    //         while_each_thread(current, thread) 
+    //         {
+    //             if ( current != thread && thread->state == TASK_RUNNING )
+    //             {
+    //                 if ( g_DevStep < 1 )
+    //                 {
+    //                     printk("current:%lu, thread:%lu", current->pid, thread->pid);
+    //                 }
+    //                 else
+    //                 {
+    //                     pid = thread->pid;
+    //                     if ( idxAry+4 < arySize )
+    //                         showinfoI(thread, vma->vm_start, vma->vm_end, addr, &idxAry);
+    //                 }
+    //             }
+    //         };
 
-            rcu_read_unlock();
-        }
-    }
+    //         rcu_read_unlock();
+    //     }
+    // }
 
-    return pid;
+    // return pid;
 }
