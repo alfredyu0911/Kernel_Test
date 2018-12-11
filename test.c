@@ -137,7 +137,7 @@ void project_Part_I()
     }
 }
 
-void project_Part_II()
+int project_Part_II()
 {
     int x = 0, y = 0;
     printf("x: %d, y: %d\n", x, y);    /* show the initial values of x and y */
