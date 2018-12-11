@@ -112,7 +112,7 @@ void showinfoI(struct mm_struct *mm,
     ary[(*idx)++] = presentCount;
 }
 
-asmlinkage long sys_linux_project_partI(int pid, unsigned long *addr, unsigned long arySize)
+asmlinkage unsigned long sys_linux_project_partI(int pid, unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = pid_task(find_vpid(pid), PIDTYPE_PID);
     struct vm_area_struct *vma = 0;
@@ -130,7 +130,7 @@ asmlinkage long sys_linux_project_partI(int pid, unsigned long *addr, unsigned l
     return task->pid;
 }
 
-asmlinkage long sys_linux_project_partII(unsigned long *addr, unsigned long arySize)
+asmlinkage unsigned long sys_linux_project_partII(unsigned long *addr, unsigned long arySize)
 {
     struct task_struct *task = current;
     struct vm_area_struct *vma = 0;
@@ -158,6 +158,6 @@ asmlinkage long sys_linux_project_partII(unsigned long *addr, unsigned long aryS
             rcu_read_unlock();
         }
     }
-    
+
     return pid;
 }
