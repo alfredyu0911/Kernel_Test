@@ -144,17 +144,27 @@ void search_and_show_SharedInterval()
     }
 
     int totalCount1=0, totalCount2=0;
+    int totalPresentedCount1=0, totalPresentedCount2=0;
     for ( i = 0 ; i < (MEMORY_SIZE/4) ; i = i+5 )
     {
         if ( result_1[i] != ARRAY_EMPTY && result_1[i+1] != ARRAY_EMPTY )
+        {
             totalCount1 += ((result_1[i+1] - result_1[i]) / BYTES_PER_PAGE);
+            totalPresentedCount1 += result_1[i+4];
+        }
         if ( result_2[i] != ARRAY_EMPTY && result_2[i+1] != ARRAY_EMPTY )
+        {
             totalCount2 += ((result_2[i+1] - result_2[i]) / BYTES_PER_PAGE);
+            totalPresentedCount2 += result_2[i+4];
+        }
     }
 
-    double per1 = (double)count / (double)totalCount1;
-    double per2 = (double)count / (double)totalCount2;
-    printf("total %d (%6.2f%%/%6.2f%%) of pages are shared\n", count, per1, per2);
+    double per1 = (double)count / (double)totalCount1 * 100.0;
+    double per2 = (double)count / (double)totalCount2 * 100.0;
+    printf("total %d of pages are shared.\n(%6.2f%%/%6.2f%% of all pages)\n", count, per1, per2);
+    double per1 = (double)count / (double)totalPresentedCount1 * 100.0;
+    double per2 = (double)count / (double)totalPresentedCount1 * 100.0;
+    printf("(%6.2f%%/%6.2f%% of presented pages)\n", per1, per2);
 }
 
 void project_Part_I()
