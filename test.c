@@ -166,19 +166,19 @@ int project_Part_II()
         return 1;
     }
 
-    /* increment y to 100 in the first thread */
-    while (++y < 100)
-        ;
-
-    printf("y increment finished\n");
-    linux_survey_VV(result_2);
-
     /* wait for the second thread to finish */
     if (pthread_join(inc_x_thread, NULL))
     {
         fprintf(stderr, "Error joining thread\n");
         return 2;
     }
+
+    /* increment y to 100 in the first thread */
+    while (++y < 100)
+        ;
+
+    printf("y increment finished\n");
+    linux_survey_VV(result_2);
 
     /* show the results - x is now 100 thanks to the second thread */
     printf("x: %d, y: %d\n", x, y);
