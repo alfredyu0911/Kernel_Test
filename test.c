@@ -13,6 +13,25 @@
 unsigned long result_1[MEMORY_SIZE];
 unsigned long result_2[MEMORY_SIZE];
 
+void linux_survey_TT(unsigned long pid, unsigned long *ary);
+void linux_survey_VV(unsigned long *ary);
+
+void project_Part_I();
+void project_Part_II();
+
+/* this function is run by the second thread */
+void *inc_x(void *x_void_ptr)
+{
+    /* increment input parameter to 100 */
+    int *x_ptr = (int *)x_void_ptr; 
+    while ( ++(*x_ptr) < 100 );
+
+    printf("x increment finished\n");
+    linux_survey_VV(result_1);
+    
+    return NULL;
+}
+
 void linux_survey_TT(unsigned long pid, unsigned long *ary)
 {
     unsigned long ret = syscall(SYSTEM_CALL_ID_PART_I, pid, ary, MEMORY_SIZE);
@@ -48,19 +67,6 @@ void linux_survey_TT(unsigned long pid, unsigned long *ary)
     double ratio = (double)totalPresentedCount / (double)totalPages * 100.0;
     printf("presented pages: %3lu    total pages: %3lu\n", totalPresentedCount, totalPages);
     printf("system allocate %6.2f%% of memory pages\n", ratio);
-}
-
-/* this function is run by the second thread */
-void *inc_x(void *x_void_ptr)
-{
-    /* increment input parameter to 100 */
-    int *x_ptr = (int *)x_void_ptr; 
-    while ( ++(*x_ptr) < 100 );
-
-    printf("x increment finished\n");
-    linux_survey_VV(result_1);
-    
-    return NULL;
 }
 
 void linux_survey_VV(unsigned long *ary)
